@@ -1,170 +1,61 @@
-#include "RoboCatShared.h"
-#pragma comment (lib,"ws2_32.lib") // 윈속 라이브러리 링크
-enum SocketAddressFamily
-{
-	INET = AF_INET,
-	INET6 = AF_INET6
+#ifndef _SOCKETUTIL_H_
+#define _SOCKETUTIL_H_
+enum SocketAddressFamily {
+	INET=AF_INET,
+	INET6=AF_INET6
 };
-
-class SocketUtil
-{
+class SocketUtil {
 public:
-
-	static bool			StaticInit();
-	static void			CleanUp();
-
-	static void			ReportError(const char* inOperationDesc);
-	static int			GetLastError();
-
-	/*static int			Select(const vector< TCPSocketPtr >* inReadSet,
-		vector< TCPSocketPtr >* outReadSet,
-		const vector< TCPSocketPtr >* inWriteSet,
-		vector< TCPSocketPtr >* outWriteSet,
-		const vector< TCPSocketPtr >* inExceptSet,
-		vector< TCPSocketPtr >* outExceptSet);
-		*/
-	static UDPSocketPtr	CreateUDPSocket(SocketAddressFamily inFamily);
-	//static TCPSocketPtr	CreateTCPSocket(SocketAddressFamily inFamily);
-
+	static UDPSocketPtr createUDPSocket(SocketAddressFamily inFamily);
+	static TCPSocketPtr createTCPSocket(SocketAddressFamily inFamily);
+	static int Select(const vector<TCPSocketPtr>* inReadSet, vector<TCPSocketPtr>*outReadSet,
+		const vector<TCPSocketPtr>* inWriteSet, vector<TCPSocketPtr>* outWriteSet,
+		const vector<TCPSocketPtr>* inExpectSet, vector<TCPSocketPtr>* outExpectSet);
 private:
-
-	//inline static fd_set* FillSetFromVector(fd_set& outSet, const vector< TCPSocketPtr >* inSockets, int& ioNaxNfds);
-	//inline static void FillVectorFromSet(vector< TCPSocketPtr >* outSockets, const vector< TCPSocketPtr >* inSockets, const fd_set& inSet);
+	static fd_set* FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr>* inSockets, int& ioNaxNfds);
+	static void FillVectorFromSet(vector<TCPSocketPtr>*outSocket, const vector<TCPSocketPtr>*inSocket, const fd_set&inSet);
 };
-
-
-
-
-bool SocketUtil::StaticInit()
-{
-#if _WIN32
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR)
-	{
-		ReportError("Starting Up");
-		return false;
-	}
-#endif
-	return true;
-}
-
-void SocketUtil::CleanUp()
-{
-#if _WIN32
-	WSACleanup();
-#endif
-}
-
-
-void SocketUtil::ReportError(const char* inOperationDesc)
-{
-#if _WIN32
-	LPVOID lpMsgBuf;
-	DWORD errorNum = GetLastError();
-
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		errorNum,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
-		0, NULL);
-
-
-	LOG("Error %s: %d- %s", inOperationDesc, errorNum, lpMsgBuf);
-#else
-	LOG("Error: %hs", inOperationDesc);
-#endif
-}
-
-int SocketUtil::GetLastError()
-{
-#if _WIN32
-	return WSAGetLastError();
-#else
-	return errno;
-#endif
-
-}
-
-UDPSocketPtr SocketUtil::CreateUDPSocket(SocketAddressFamily inFamily)
-{
-	SOCKET s = socket(inFamily, SOCK_DGRAM, IPPROTO_UDP);
-
+UDPSocketPtr SocketUtil::createUDPSocket(SocketAddressFamily inFamily) {
+	SOCKET s = socket(inFamily, SOCK_DGRAM, 0);
 	if (s != INVALID_SOCKET)
-	{
 		return UDPSocketPtr(new UDPSocket(s));
-	}
-	else
-	{
-		ReportError("SocketUtil::CreateUDPSocket");
-		return nullptr;
-	}
+	return nullptr;
 }
-/*
-TCPSocketPtr SocketUtil::CreateTCPSocket(SocketAddressFamily inFamily)
-{
-	SOCKET s = socket(inFamily, SOCK_STREAM, IPPROTO_TCP);
 
+TCPSocketPtr SocketUtil::createTCPSocket(SocketAddressFamily inFamily) {
+	SOCKET s = socket(inFamily, SOCK_STREAM, 0);
 	if (s != INVALID_SOCKET)
-	{
 		return TCPSocketPtr(new TCPSocket(s));
-	}
-	else
-	{
-		ReportError("SocketUtil::CreateTCPSocket");
-		return nullptr;
-	}
+	return nullptr;
 }
 
-fd_set* SocketUtil::FillSetFromVector(fd_set& outSet, const vector< TCPSocketPtr >* inSockets, int& ioNaxNfds)
-{
-	if (inSockets)
-	{
+fd_set* SocketUtil::FillSetFromVector(fd_set &outSet, const vector<TCPSocketPtr>* inSockets, int& ioNaxNfds) {
+	if (inSockets) {
 		FD_ZERO(&outSet);
-
-		for (const TCPSocketPtr& socket : *inSockets)
-		{
+		for (const TCPSocketPtr& socket : *inSockets) {
 			FD_SET(socket->mSocket, &outSet);
-#if !_WIN32
-			ioNaxNfds = std::max(ioNaxNfds, socket->mSocket);
-#endif
 		}
 		return &outSet;
 	}
-	else
-	{
+	else {
 		return nullptr;
 	}
 }
-
-
-void SocketUtil::FillVectorFromSet(vector< TCPSocketPtr >* outSockets, const vector< TCPSocketPtr >* inSockets, const fd_set& inSet)
+void SocketUtil::FillVectorFromSet(vector< TCPSocketPtr >* outSockets,
+	const vector< TCPSocketPtr >* inSockets, const fd_set& inSet) 
 {
-	if (inSockets && outSockets)
-	{
+	if (inSockets&&outSockets) {
 		outSockets->clear();
-		for (const TCPSocketPtr& socket : *inSockets)
-		{
-			if (FD_ISSET(socket->mSocket, &inSet))
-			{
+		for (const TCPSocketPtr& socket : *inSockets) {
+			if (FD_ISSET(socket->mSocket, &inSet)) {
 				outSockets->push_back(socket);
 			}
 		}
 	}
 }
-
-int SocketUtil::Select(const vector< TCPSocketPtr >* inReadSet,
-	vector< TCPSocketPtr >* outReadSet,
-	const vector< TCPSocketPtr >* inWriteSet,
-	vector< TCPSocketPtr >* outWriteSet,
-	const vector< TCPSocketPtr >* inExceptSet,
-	vector< TCPSocketPtr >* outExceptSet)
-{
-	//build up some sets from our vectors
+int SocketUtil::Select(const vector<TCPSocketPtr>* inReadSet, vector<TCPSocketPtr>*outReadSet,
+	const vector<TCPSocketPtr>* inWriteSet, vector<TCPSocketPtr>* outWriteSet,
+	const vector<TCPSocketPtr>* inExceptSet, vector<TCPSocketPtr>* outExceptSet) {
 	fd_set read, write, except;
 
 	int nfds = 0;
@@ -182,4 +73,6 @@ int SocketUtil::Select(const vector< TCPSocketPtr >* inReadSet,
 		FillVectorFromSet(outExceptSet, inExceptSet, except);
 	}
 	return toRet;
-}*/
+}
+
+#endif // !_SOCKETUTIL_H_

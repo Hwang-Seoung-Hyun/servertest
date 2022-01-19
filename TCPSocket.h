@@ -1,4 +1,7 @@
+#ifndef _TCPSOCKET_H_
+#define _TCPSOCKET_H_
 #pragma once
+#include"RoboCatShared.h"
 class TCPSocket;
 using TCPSocketPtr = shared_ptr<TCPSocket>;
 class TCPSocket {
@@ -6,19 +9,20 @@ public:
 	~TCPSocket();
 	int Connet(const SocketAddress& inAddress);
 	int Bind(const SocketAddress& inToAddress);
-	int Listen(int inBackLog);
+	int Listen(int inBackLog = 32);
 	TCPSocketPtr Accept(SocketAddress& inFromAddress);
 	int Send(const void* inData, int inLen);
 	int Receive(void* inBuffer, int inLen);
+	int setNonBlockingMode(bool isNonBlocking);
 	
-	TCPSocket(SOCKET inSocket) :mSocket(inSocket) {};
 private:
+	TCPSocket(SOCKET inSocket) :mSocket(inSocket) {};
 	friend class SocketUtil;
 	SOCKET mSocket;
-	
+
 };
 int TCPSocket::Bind(const SocketAddress& inToAddress) {
-	int err=bind(mSocket, &inToAddress.mSockAddr, inToAddress.GetSize());
+	int err = bind(mSocket, &inToAddress.mSockAddr, inToAddress.GetSize());
 	if (err == 0)
 		return NO_ERROR;
 	else
@@ -38,7 +42,7 @@ int TCPSocket::Connet(const SocketAddress& inAddress) {
 }
 
 int TCPSocket::Listen(int inBackLog) {
-	int err=listen(mSocket, inBackLog);
+	int err = listen(mSocket, inBackLog);
 	if (err == 0)
 		return NO_ERROR;
 	else
@@ -54,7 +58,7 @@ TCPSocketPtr TCPSocket::Accept(SocketAddress& inFromAddress) {
 		return TCPSocketPtr(new TCPSocket(newSocket));
 	}
 	else {
-		cout << "invalid newsocket\n";
+
 		return nullptr;
 	}
 }
@@ -67,8 +71,8 @@ int TCPSocket::Send(const void* inData, int inLen) {
 	else//error
 		return -1;
 
-	//SocketUtil::ReportError(L"TCPSocket::Send);
-	//return -SocketUtil::GetLastError;
+	//SocketUtil::ReportError("TCPSocket::Send");
+	//return -SocketUtil::GetLastError();
 }
 int TCPSocket::Receive(void* inBuffer, int inLen) {
 	int recvByte = recv(mSocket, static_cast<char*>(inBuffer), inLen, 0);
@@ -78,9 +82,17 @@ int TCPSocket::Receive(void* inBuffer, int inLen) {
 	else//error
 		return -1;
 
-	//SocketUtil::ReportError(L"TCPSocket::Receive);
-	//return -SocketUtil::GetLastError;
+	//SocketUtil::ReportError("TCPSocket::Receive");
+	//return -SocketUtil::GetLastError();
+}
+int TCPSocket::setNonBlockingMode(bool isNonBlocking) {
+	u_long a = isNonBlocking ? 1 : 0;
+	int result = ioctlsocket(mSocket, FIONBIO, &a);
+	if (result != SOCKET_ERROR)
+		return NO_ERROR;
+	return -1;
 }
 TCPSocket::~TCPSocket() {
 	closesocket(mSocket);
 }
+#endif // !_TCPSOCKET_H_

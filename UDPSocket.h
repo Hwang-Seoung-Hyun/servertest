@@ -1,6 +1,8 @@
 #pragma once
-#include"SocketAddress.h"
-//#include"SocketUtil.h"
+#ifndef _UDPSOCKET_H_
+#define _UDPSOCKET_H_
+
+#include "RoboCatShared.h"
 #pragma comment (lib,"ws2_32.lib") // 윈속 라이브러리 링크
 using namespace std;
 
@@ -10,12 +12,12 @@ public:
 	int Bind(const SocketAddress& inToAddress);
 	int sendTo(const void* inData, int inLen, const SocketAddress& into);
 	int receiveFrom(void* inBuffer, int inLen, SocketAddress& outfrom);
-	
+
 	UDPSocket(SOCKET inSocket) :mSocket(inSocket) {};
 private:
 	friend class SocketUtil;
 	friend class SocketAddress;
-	
+
 	SOCKET mSocket;
 };
 using UDPSocketPtr = shared_ptr<UDPSocket>;
@@ -43,18 +45,11 @@ int UDPSocket::sendTo(const void* inData, int inLen, const SocketAddress& inTo) 
 	//return -SocketUtil::GetLastError;
 }
 
-int UDPSocket::receiveFrom(void* inToReceive, int inMaxLength, SocketAddress& outFromAddress)
-{
-	int fromLength = outFromAddress.GetSize();
-
-	int readByteCount = recvfrom(mSocket,
-		static_cast<char*>(inToReceive),
-		inMaxLength,
-		0, &outFromAddress.mSockAddr, &fromLength);
-	if (readByteCount >= 0)
-	{
-		return readByteCount;
-	}
+int UDPSocket::receiveFrom(void* inBuffer, int inLen, SocketAddress& outfrom) {
+	int fromsize = outfrom.GetSize();
+	int byteReceiveCount = recvfrom(mSocket, static_cast<char*>(inBuffer), inLen, 0, &outfrom.mSockAddr, &fromsize);
+	if (byteReceiveCount > 0)//no error
+		return byteReceiveCount;
 	else//error
 		return -1;
 
@@ -69,3 +64,5 @@ UDPSocket::~UDPSocket() {
 //shared_ptr<UDPSocket> UDPSocket::CreateUDPSocket(SocketAddressFamily inFamily) {
 
 //}
+#endif // !_UDPSOCKET_H
+
