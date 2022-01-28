@@ -142,7 +142,8 @@
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AddressOfSocket.h" />
+    <ClInclude Include="MemoryStream.h" />
+    <ClInclude Include="RoboCatMath.h" />
     <ClInclude Include="RoboCatShared.h" />
     <ClInclude Include="SocketAddress.h" />
     <ClInclude Include="SocketUtil.h" />

@@ -29,10 +29,13 @@
     <ClInclude Include="SocketUtil.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="AddressOfSocket.h">
+    <ClInclude Include="RoboCatShared.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="RoboCatShared.h">
+    <ClInclude Include="RoboCatMath.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

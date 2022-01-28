@@ -50,6 +50,7 @@ using std::unordered_set;
 
 class RoboCat;
 class GameObject;
+#include"MemoryStream.h"
 #include <Windows.h>
 #include <WinSock2.h>
 #include <Ws2tcpip.h>
@@ -58,6 +59,8 @@ class GameObject;
 //#include "SocketAddressFactory.h"
 #include"TCPSocket.h"
 #include"UDPSocket.h"
+#include"RoboCatMath.h"
+
 //#include"AddressOfSocket.h"
 //#include"SocketUtil.h"
 
