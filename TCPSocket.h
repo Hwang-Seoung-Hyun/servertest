@@ -53,7 +53,7 @@ int TCPSocket::Listen(int inBackLog) {
 
 TCPSocketPtr TCPSocket::Accept(SocketAddress& inFromAddress) {
 	int a = inFromAddress.GetSize();
-	SOCKET newSocket = accept(mSocket, &inFromAddress.mSockAddr, &a);
+	SOCKET newSocket = accept(mSocket, &inFromAddress.mSockAddr, &a);//inFromAddress에 송신자 주소 채워짐
 	if (newSocket != INVALID_SOCKET) {
 		return TCPSocketPtr(new TCPSocket(newSocket));
 	}

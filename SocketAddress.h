@@ -23,10 +23,14 @@ public:
 
 	}
 	size_t GetSize() const { return sizeof(sockaddr); };
-
+	char* getAddress() {
+		sockaddr_in* si = GetAsSockAddrIn();
+		return inet_ntoa(si->sin_addr);
+	}
 private:
 	friend class UDPSocket;
 	friend class TCPSocket;
+	friend class AddressOfSocket;
 	sockaddr mSockAddr;
 	sockaddr_in* GetAsSockAddrIn() {
 		return reinterpret_cast<sockaddr_in*>(&mSockAddr);

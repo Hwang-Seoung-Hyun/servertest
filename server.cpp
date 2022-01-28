@@ -58,9 +58,10 @@ void UDPrecv() {
 void TCPrecv() {
 	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 	TCPSocketPtr listenSocket = SocketUtil::createTCPSocket(INET);
-	char myAddress[30] = /*"192.168.0.17";*/"192.168.50.175";
+	char myAddress[30] = "192.168.0.17";/*"192.168.50.175"*/;
 	SocketAddress serverAddr(myAddress, serverPort);
 	SocketAddress clientAddr;
+	unordered_map< TCPSocketPtr, SocketAddress> addressOfSocket;
 	char buf[100];
 	int isbind = listenSocket->Bind(serverAddr);
 	if (isbind == -1) {
@@ -86,13 +87,16 @@ void TCPrecv() {
 						return;
 					cout << "success connect!\n\n";
 					readBlockSock.push_back(connectSock);
+					addressOfSocket.insert_or_assign(connectSock, clientAddr);
+					
 				}
 				else {
 					int recvsize = mysocket->Receive(buf, 30);
 					if (recvsize > 0) {
 						buf[recvsize] = '\0';
-						//cout << "receive from "<<inet_ntoa()
-
+						SocketAddress connectAddress = addressOfSocket[mysocket];
+						cout << "receive from " << connectAddress.getAddress() << "\n";
+						
 						cout << buf << "\n";
 					}
 				}
