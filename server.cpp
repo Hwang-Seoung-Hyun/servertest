@@ -58,7 +58,7 @@ void UDPrecv() {
 void TCPrecv() {
 	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 	TCPSocketPtr listenSocket = SocketUtil::createTCPSocket(INET);
-	char myAddress[30] = "192.168.0.17";
+	char myAddress[30] = /*"192.168.0.17";*/"192.168.50.175";
 	SocketAddress serverAddr(myAddress, serverPort);
 	SocketAddress clientAddr;
 	char buf[100];
